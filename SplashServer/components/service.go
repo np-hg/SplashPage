@@ -62,8 +62,8 @@ func NewSplash(valuesYAML string) SplashService {
 func (s *SplashService) MainSplashHandler(w http.ResponseWriter, r *http.Request) {
 	rawAccessToken := r.Header.Get("Authorization")
 
-	if rawAccessToken == "" {
-		rawAccessToken = r.URL.Query().Get("Authorization")
+	if token := r.URL.Query().Get("token"); rawAccessToken == "" && token != "" {
+		rawAccessToken = "Bearer " + token
 	}
 
 	if rawAccessToken == "" {
@@ -119,9 +119,9 @@ func (s *SplashService) CallbackHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	u, _ := url.Parse("http://localhost:3000/splash")
+	u, _ := url.Parse(s.Host + "/splash")
 	q := u.Query()
-	q.Add("Authorization", "Bearer "+resp.OAuth2Token.AccessToken)
+	q.Add("token", resp.OAuth2Token.AccessToken)
 	u.RawQuery = q.Encode()
 
 	http.Redirect(w, r, u.String(), http.StatusPermanentRedirect)

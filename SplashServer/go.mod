@@ -1,4 +1,4 @@
-module splash
+module splashserver
 
 go 1.13
 
