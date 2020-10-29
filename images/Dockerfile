@@ -2,7 +2,7 @@ FROM golang:1.12-alpine as builder
 
 RUN adduser -D -g 'splashuser' splashuser
 WORKDIR /app
-COPY SplashServer SplashServer
+COPY . .
 RUN apk add --no-cache git
 RUN go build
 
