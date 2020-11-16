@@ -1,19 +1,21 @@
-FROM golang:1.12-alpine as builder
+FROM golang:1.14-alpine as builder
 
 RUN adduser -D -g 'splashuser' splashuser
 WORKDIR /app
-COPY . .
+COPY SplashServer/ .
 RUN apk add --no-cache git
-RUN go build
+RUN go build -o /opt/splashserver
 
 FROM scratch
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /app/opt/splashuser /opt/splashuser
-VOLUME /data
+COPY --from=builder /opt/splashserver /opt/splashserver
+VOLUME /config
 
-# Our chosen default for Prometheus
+# Prometheus
+EXPOSE 9100
+# Application
 EXPOSE 8080
 USER splashuser
-ENTRYPOINT ["/opt/splashuser"]
+ENTRYPOINT ["/opt/splashserver"]
