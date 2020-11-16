@@ -1,13 +1,9 @@
 package main
 
 import (
-	"splashserver/components"
-	"splashserver/server"
+	"splashserver/cmd"
 )
 
 func main() {
-
-	splash := components.NewSplash("./values.yaml")
-
-	server.Serve(splash)
+	cmd.Execute()
 }

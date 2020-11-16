@@ -9,6 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"splashserver/components"
+	"splashserver/server"
 )
 
 const version = "0.1"
@@ -26,7 +28,13 @@ var (
 
 var rootCmd = &cobra.Command{
 	Version: version,
-	Use: ""
+	Use:     "",
+	Short:   "",
+	Run: func(cmd *cobra.Command, args []string) {
+		splash := components.NewSplash(viper.GetString("cfgFile"))
+		logger.Info("Starting splash page...")
+		server.Serve(splash)
+	},
 }
 
 // Execute does the thing
@@ -44,6 +52,20 @@ func createLogger() log.Logger {
 	l.SetHandler(log.StreamHandler(os.Stderr, log.JsonFormat()))
 
 	return l
+}
+
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&AUTH2_CLIENT_ID, "id", "i", AUTH2_CLIENT_ID, "client ID")
+	rootCmd.PersistentFlags().StringVarP(&AUTH2_CLIENT_SECRET, "secret", "s", AUTH2_CLIENT_SECRET, "client secret")
+	rootCmd.PersistentFlags().StringVarP(&AUTH2_REDIRECT_URL, "redirect-url", "r", AUTH2_REDIRECT_URL, "Redirect URL")
+	rootCmd.PersistentFlags().StringVarP(&AUTH2_PROVIDER_URL, "provider-url", "p", AUTH2_PROVIDER_URL, "Provider URL")
+	rootCmd.PersistentFlags().StringSliceVarP(&AUTH2_SCOPES, "scopes", "o", AUTH2_SCOPES, "Comma separated list of scopes")
+	rootCmd.PersistentFlags().StringVarP(&AUTH2_STATE, "state", "t", AUTH2_STATE, "Auth2 state")
+
+	viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
 }
 
 func initConfig() {
