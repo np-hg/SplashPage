@@ -1,7 +1,7 @@
 FROM golang:1.14-alpine
 
 WORKDIR /app
-COPY SplashServer/ .
+COPY splashserver/ .
 RUN apk add --no-cache git
 RUN go build -o /opt/splashserver
 
