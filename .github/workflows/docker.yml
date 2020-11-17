@@ -19,6 +19,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          repository: npapapietro/splash-server
           file: ./Dockerfile
-          tags: user/app:latest
+          tags: npapapietro/splash-server:latest
