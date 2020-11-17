@@ -12,6 +12,7 @@ func Serve(splash components.SplashService) {
 	})
 	http.HandleFunc("/splash", splash.MainSplashHandler)
 	http.HandleFunc(splash.CallbackPath, splash.CallbackHandler)
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 
 	http.ListenAndServe(":"+splash.Port, nil)
 }
