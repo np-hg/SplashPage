@@ -18,7 +18,7 @@ type Values struct {
 
 // NewValues creates a service from a yaml file path
 func NewValues(fpath string) Values {
-	filename, _ := filepath.Abs("./values.yaml")
+	filename, _ := filepath.Abs("./config.yaml")
 	yamlFile, err := ioutil.ReadFile(filename)
 
 	if err != nil {
