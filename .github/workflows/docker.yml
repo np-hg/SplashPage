@@ -22,3 +22,4 @@ jobs:
           file: ./Dockerfile
           tags: npapapietro/splash-server:latest
           push: true
+          context: .
