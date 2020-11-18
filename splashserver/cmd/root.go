@@ -7,10 +7,11 @@ import (
 
 	log "gopkg.in/inconshreveable/log15.v2"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"splashserver/components"
 	"splashserver/server"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const version = "0.1"
@@ -31,7 +32,8 @@ var rootCmd = &cobra.Command{
 	Use:     "",
 	Short:   "",
 	Run: func(cmd *cobra.Command, args []string) {
-		splash := components.NewSplash(viper.GetString("cfgFile"))
+		s := viper.GetViper().ConfigFileUsed()
+		splash := components.NewSplash(s)
 		logger.Info("Starting splash page...")
 		server.Serve(splash)
 	},
