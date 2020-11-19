@@ -77,7 +77,9 @@ func (s *SplashService) MainSplashHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	_, err := s.verifier.Verify(s.context, parts[1])
-
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	if err != nil {
 		http.Redirect(w, r, s.auth.AuthCodeURL(s.state), http.StatusFound)
 		return

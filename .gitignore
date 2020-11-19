@@ -2,3 +2,4 @@ splash
 ./values.yaml
 
 .vscode/
+config.yaml
