@@ -3,6 +3,7 @@ package components
 import (
 	"context"
 	"os"
+	log "splashserver/logs"
 	"strings"
 
 	oidc "github.com/coreos/go-oidc"
@@ -23,6 +24,7 @@ type AuthCredentials struct {
 func (a *AuthCredentials) ToOAuth(ctx context.Context, provider oidc.Provider) oauth2.Config {
 	var ClientSecret string
 	if strings.TrimSpace(a.ClientSecret) == "" {
+		log.Logger.Info("ClientSecret set to empty string")
 		ClientSecret = os.Getenv("OAUTH_CLIENT_SECRET")
 	} else {
 		ClientSecret = a.ClientSecret

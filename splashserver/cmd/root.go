@@ -5,9 +5,8 @@ package cmd
 import (
 	"os"
 
-	log "gopkg.in/inconshreveable/log15.v2"
-
 	"splashserver/components"
+	"splashserver/logs"
 	"splashserver/server"
 
 	"github.com/spf13/cobra"
@@ -24,7 +23,6 @@ var (
 	AUTH2_SCOPES        []string
 	AUTH2_STATE         string
 	cfgFile             string
-	logger              log.Logger
 )
 
 var rootCmd = &cobra.Command{
@@ -32,28 +30,21 @@ var rootCmd = &cobra.Command{
 	Use:     "",
 	Short:   "",
 	Run: func(cmd *cobra.Command, args []string) {
-		s := viper.GetViper().ConfigFileUsed()
+		s := viper.ConfigFileUsed()
 		splash := components.NewSplash(s)
-		logger.Info("Starting splash page...")
+		logs.Logger.Info("Starting splash page...")
 		server.Serve(splash)
 	},
 }
 
 // Execute does the thing
 func Execute() {
-	logger = createLogger()
+	logs.CreateLogger()
 
 	if err := rootCmd.Execute(); err != nil {
-		logger.Error(err.Error())
+		logs.Logger.Error(err.Error())
 		os.Exit(1)
 	}
-}
-
-func createLogger() log.Logger {
-	l := log.New()
-	l.SetHandler(log.StreamHandler(os.Stderr, log.JsonFormat()))
-
-	return l
 }
 
 func init() {
@@ -72,15 +63,17 @@ func init() {
 
 func initConfig() {
 	if cfgFile == "" {
+		logs.Logger.Info("Config file not set, reading default")
 		viper.AddConfigPath(".")
 		viper.SetConfigName("config")
 	} else {
 		viper.SetConfigFile(cfgFile)
+		logs.Logger.Info("Config set via cobra")
 	}
 
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
-		logger.Info("Reading config", "config file", viper.ConfigFileUsed())
+		logs.Logger.Info("Reading config", "config file", viper.ConfigFileUsed())
 	}
 }
