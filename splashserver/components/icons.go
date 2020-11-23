@@ -28,11 +28,9 @@ func (i Icon) ConsumeTemplate() string {
 		img = `<img class='img-icon' src="{{.Image}}"/>`
 	}
 	templString := `
-	<figure class='service-icon'>
-		<a href="{{.Link}}">` +
-		img +
-		`</a>
-	</figure>`
+	<div class='service-icon'>
+		<a href="{{.Link}}">` + img + `</a>
+	</div>`
 
 	tmpl, err := template.New("icon-" + i.Name).Parse(templString)
 	if err != nil {
@@ -53,15 +51,36 @@ func (Icon) Styles() string {
 
 	return `
 	.service-icon {
-		padding: 15px 25px;
+		background-color: white;
 		position: relative;
 		display: inline-block;
 		font-size: 25px;
 		font-family: sans-serif;
-		border-radius: 3px;	
+		border-radius: 3px;
+		margin: 10px;
+		height: 125px;
+		border: calc(2px + 0.2vw) solid transparent;
+		background-origin: border-box;
+		background-clip: content-box, border-box;
+		background-size: cover;
+		box-sizing: border-box;
+		box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.5);
 	}
-	img.img-icon {
-		width: 150px;
+
+	.service-icon>a {
+		position: absolute;
+		top: 50%%;
+		-ms-transform: translateY(-50%%);
+		transform: translateY(-50%%);
+		margin-left: 25%%;
+	}
+
+	.service-icon>a>img {
+		position: absolute;
+		text-align: center;
+		top: 50%%;
+		-ms-transform: translateY(-50%%);
+		transform: translateY(-50%%);
 	}
 	`
 }

@@ -29,8 +29,16 @@ type SplashService struct {
 // NewSplash creates a new splash service
 func NewSplash(valuesYAML string) SplashService {
 	values := NewValues(valuesYAML)
-	component := values.AsHTMLComponent()
-	authHTML := ToHTMLPage(component.ConsumeTemplate(), component.Styles())
+
+	var html string
+	if values.RawHTML != nil {
+		html = *values.RawHTML
+		html = strings.ReplaceAll(html, "%", "%%")
+
+	} else {
+		component := values.AsHTMLComponent()
+		html = ToHTMLPage(component.ConsumeTemplate(), component.Styles())
+	}
 
 	ctx := context.Background()
 	provider, err := oidc.NewProvider(ctx, values.Auth.ProviderURL)
@@ -45,7 +53,7 @@ func NewSplash(valuesYAML string) SplashService {
 	u, _ := url.Parse(values.Auth.RedirectURL)
 
 	return SplashService{
-		authHTML:     authHTML,
+		authHTML:     html,
 		auth:         &auth,
 		context:      ctx,
 		provider:     provider,
