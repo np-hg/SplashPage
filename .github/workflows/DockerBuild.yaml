@@ -1,4 +1,4 @@
-name: Test Docker BUild
+name: Test Docker Build
 on: [pull_request]
 
 jobs:
