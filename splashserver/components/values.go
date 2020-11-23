@@ -9,9 +9,11 @@ import (
 
 // Values for this splash
 type Values struct {
-	Icons      []Icon          `yaml:"icons"`
-	Background Background      `yaml:"background,omitempty"`
+	Icons      *[]Icon         `yaml:"icons,omitempty"`
+	Background *Background     `yaml:"background,omitempty"`
+	Header     *HeaderImage    `yaml:"titleImg,omitempty"`
 	Auth       AuthCredentials `yaml:"auth"`
+	RawHTML    *string         `yaml:"rawHtml"`
 	Host       string          `yaml:"host"` // temp for now
 	Port       string          `yaml:"port"`
 }
@@ -52,49 +54,50 @@ func (s *Values) ConsumeTemplate() string {
 // Styles returns css styles
 func (s *Values) Styles() string {
 	// only need 1 icons style
-	cssString := s.Icons[0].Styles() + s.Background.Styles()
+	icons := *(s.Icons)
+	cssString := icons[0].Styles() + s.Background.Styles()
 	cssString += `
 	.grid {
 		display: grid;
-		grid-auto-columns: 200px;
+		grid-template-columns: 300px 300px 300px;
+		grid-column-gap: 25px;
+		grid-row-gap: 25px;
 		width: auto;
 		overflow: hidden;
-	  }
-	  
-	.column {
-		grid-row: 1;
-	  }
+	}
 
 	.container{
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		text-align: center;
-		min-height: 100vh;
+
+		min-height: 100%;
+		padding-top: 25px;
 	}
 	`
+	if s.Header != nil {
+		cssString += s.Header.Styles()
+	}
 	return cssString
 
 }
 
 func (s *Values) prepareIcons() string {
-	iconHTML := `
+	icons := *(s.Icons)
+
+	var iconHTML string
+	if s.Header != nil {
+		iconHTML += s.Header.ConsumeTemplate()
+	}
+	iconHTML += `
 	<div class='container'>
 		<div class='grid'>
-			<div class='column'>
 	`
-	for idx, icon := range s.Icons {
-		if idx%2 == 0 && idx > 0 {
-			iconHTML += `
-			</div>
-			<div class='column'>
-			`
-		}
+	for _, icon := range icons {
 		iconHTML += icon.ConsumeTemplate()
 	}
 	iconHTML += `
-			</div>
 		</div>
 	</div>
 	`

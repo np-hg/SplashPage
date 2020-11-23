@@ -10,6 +10,7 @@ func ToHTMLPage(s string, style string) string {
 		<style>
 		body {
 			background-size: 100% 100%;
+			background-color: rgb(94,95,99);
 		}` +
 		style +
 		`</style>
