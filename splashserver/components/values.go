@@ -68,14 +68,16 @@ func (v *Values) ToHTML(user User, templatedHTML string) (string, error) {
 	if v.ServiceIcons != nil {
 		tmpl, err := template.New("html-template").Parse(templatedHTML)
 
+		serviceIcons := *v.ServiceIcons
 		// if user groups is in IconLinks allowed groups
 		// show flag is True
-		for _, i := range *v.ServiceIcons.IconLinks {
-			i.Show = i.ForceShow || isIn(user.Groups, i.AllowedGroups)
+		for i := 0; i < len(*serviceIcons.IconLinks); i++ {
+			icon := &(*serviceIcons.IconLinks)[i]
+			icon.Show = (icon.ForceShow || isIn(user.Groups, icon.AllowedGroups))
 		}
 
 		var tpl bytes.Buffer
-		if err = tmpl.Execute(&tpl, v.ServiceIcons); err != nil {
+		if err = tmpl.Execute(&tpl, serviceIcons); err != nil {
 			return "", err
 		}
 
