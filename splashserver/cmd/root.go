@@ -23,6 +23,7 @@ var (
 	AUTH2_SCOPES        []string
 	AUTH2_STATE         string
 	cfgFile             string
+	HTML_TEMPLATE       string
 )
 
 var rootCmd = &cobra.Command{
@@ -31,10 +32,14 @@ var rootCmd = &cobra.Command{
 	Short:   "",
 	Run: func(cmd *cobra.Command, args []string) {
 		s := viper.ConfigFileUsed()
-		splash := components.NewSplash(s)
+		splash := components.NewSplash(s, HTML_TEMPLATE)
 		logs.Logger.Info("Starting splash page...")
 		server.Serve(splash)
 	},
+}
+
+func LoadAssets(asset string) {
+	HTML_TEMPLATE = asset
 }
 
 // Execute does the thing
