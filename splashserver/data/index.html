@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        {{ if .CustomCSS }}
+            {{ .CustomCSS }}
+        {{ else }}
+        body {
+            background-size: 100%;
+            background-color: rgb(94, 95, 99);
+        }
+
+        .service-icon {
+            background-color: white;
+            position: relative;
+            display: inline-block;
+            font-size: 25px;
+            font-family: sans-serif;
+            border-radius: 3px;
+            margin: 10px;
+            height: 125px;
+            border: calc(2px + 0.2vw) solid transparent;
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+            background-size: cover;
+            box-sizing: border-box;
+            box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .service-icon>a {
+            position: absolute;
+            top: 50%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+            margin-left: 20%;
+        }
+
+        .service-icon>a>img {
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+            max-width: 150px;
+
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 300px 300px 300px;
+            grid-column-gap: 25px;
+            grid-row-gap: 25px;
+            width: auto;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+            padding-top: 25px;
+        }
+
+        .hdr-img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 25px;
+            width: 700px;
+        }
+        {{ end }}
+    </style>
+</head>
+
+<body>
+    {{if .BannerImage}}
+        <div class='hdr-link'><img class='hdr-img' src="{{ .BannerImage }}"/></div>
+    {{ end }}
+
+    <div class='container'>
+        <div class='grid'>
+
+            {{ with .IconLinks }}
+                {{ range . }}
+                    {{ if .Show }}
+                        <div class='service-icon'>
+                            <a href="{{ .Href }}"><img class='img-icon' src="{{ .Src }}"/></a>
+                        </div>
+                    {{ end }}
+                {{ end }}
+            {{ end }}
+        </div>
+    </div>
+</body>
+
+</html>

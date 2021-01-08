@@ -1,21 +1,35 @@
 package components
 
 import (
+	"bytes"
+	"errors"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
+	"text/template"
 
 	"gopkg.in/yaml.v2"
 )
 
+// ServiceIcons are the preset templates icons
+type ServiceIcons struct {
+	CustomCSS   *string `yaml:"customCSS"`
+	BannerImage *string `yaml:"bannerImage"`
+	IconLinks   *[]struct {
+		Href          string   `yaml:"href"`
+		Src           string   `yaml:"src"`
+		AllowedGroups []string `yaml:"allowedGroups"`
+		Show          bool
+	} `yaml:"icons"`
+}
+
 // Values for this splash
 type Values struct {
-	Icons      *[]Icon         `yaml:"icons,omitempty"`
-	Background *Background     `yaml:"background,omitempty"`
-	Header     *HeaderImage    `yaml:"titleImg,omitempty"`
-	Auth       AuthCredentials `yaml:"auth"`
-	RawHTML    *string         `yaml:"rawHtml"`
-	Host       string          `yaml:"host"` // temp for now
-	Port       string          `yaml:"port"`
+	Auth         AuthCredentials `yaml:"auth"`
+	RawHTML      *string         `yaml:"rawHtml"`
+	Host         string          `yaml:"host"` // temp for now
+	Port         string          `yaml:"port"`
+	ServiceIcons *ServiceIcons   `yaml:"services"`
 }
 
 // NewValues creates a service from a yaml file path
@@ -41,66 +55,46 @@ func NewValues(fpath string) Values {
 	return values
 }
 
-// AsHTMLComponent casts to interface
-func (s *Values) AsHTMLComponent() HTMLComponent {
-	return s
+// ToHTML converts the values into html string
+func (v *Values) ToHTML(user User, templatedHTML string) (string, error) {
+	var html string
+	if v.RawHTML != nil {
+		html = *v.RawHTML
+		html = strings.ReplaceAll(html, "%", "%%")
+		return html, nil
+	}
+
+	if v.ServiceIcons != nil {
+		tmpl, err := template.New("html-template").Parse(templatedHTML)
+
+		// if user groups is in IconLinks allowed groups
+		// show flag is True
+		for _, i := range *v.ServiceIcons.IconLinks {
+			i.Show = isIn(user.Groups, i.AllowedGroups)
+		}
+
+		var tpl bytes.Buffer
+		if err = tmpl.Execute(&tpl, v.ServiceIcons); err != nil {
+			return "", err
+		}
+
+		html = tpl.String()
+		html = strings.ReplaceAll(html, "%", "%%")
+
+		return html, nil
+	}
+	return "", errors.New("Services or raw html must be defined")
 }
 
-// ConsumeTemplate consumes object into template
-func (s *Values) ConsumeTemplate() string {
-	return s.prepareIcons()
-}
+func isIn(userGroups []string, valueGroups []string) bool {
 
-// Styles returns css styles
-func (s *Values) Styles() string {
-	// only need 1 icons style
-	icons := *(s.Icons)
-	cssString := icons[0].Styles() + s.Background.Styles()
-	cssString += `
-	.grid {
-		display: grid;
-		grid-template-columns: 300px 300px 300px;
-		grid-column-gap: 25px;
-		grid-row-gap: 25px;
-		width: auto;
-		overflow: hidden;
+	for _, ug := range userGroups {
+		for _, vg := range valueGroups {
+			if ug == vg {
+				return true
+			}
+		}
 	}
 
-	.container{
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-
-		min-height: 100%;
-		padding-top: 25px;
-	}
-	`
-	if s.Header != nil {
-		cssString += s.Header.Styles()
-	}
-	return cssString
-
-}
-
-func (s *Values) prepareIcons() string {
-	icons := *(s.Icons)
-
-	var iconHTML string
-	if s.Header != nil {
-		iconHTML += s.Header.ConsumeTemplate()
-	}
-	iconHTML += `
-	<div class='container'>
-		<div class='grid'>
-	`
-	for _, icon := range icons {
-		iconHTML += icon.ConsumeTemplate()
-	}
-	iconHTML += `
-		</div>
-	</div>
-	`
-
-	return iconHTML
+	return false
 }

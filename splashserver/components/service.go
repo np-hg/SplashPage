@@ -14,7 +14,7 @@ import (
 
 // SplashService the web service
 type SplashService struct {
-	authHTML     string
+	values       *Values
 	auth         *oauth2.Config
 	context      context.Context
 	provider     *oidc.Provider
@@ -24,21 +24,12 @@ type SplashService struct {
 	Host         string
 	CallbackPath string
 	Port         string
+	templateHTML string
 }
 
 // NewSplash creates a new splash service
-func NewSplash(valuesYAML string) SplashService {
+func NewSplash(valuesYAML string, template string) SplashService {
 	values := NewValues(valuesYAML)
-
-	var html string
-	if values.RawHTML != nil {
-		html = *values.RawHTML
-		html = strings.ReplaceAll(html, "%", "%%")
-
-	} else {
-		component := values.AsHTMLComponent()
-		html = ToHTMLPage(component.ConsumeTemplate(), component.Styles())
-	}
 
 	ctx := context.Background()
 	provider, err := oidc.NewProvider(ctx, values.Auth.ProviderURL)
@@ -53,7 +44,7 @@ func NewSplash(valuesYAML string) SplashService {
 	u, _ := url.Parse(values.Auth.RedirectURL)
 
 	return SplashService{
-		authHTML:     html,
+		values:       &values,
 		auth:         &auth,
 		context:      ctx,
 		provider:     provider,
@@ -63,6 +54,7 @@ func NewSplash(valuesYAML string) SplashService {
 		Host:         values.Host,
 		CallbackPath: u.Path,
 		Port:         values.Port,
+		templateHTML: template,
 	}
 }
 
@@ -84,16 +76,26 @@ func (s *SplashService) MainSplashHandler(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(400)
 		return
 	}
-	_, err := s.verifier.Verify(s.context, parts[1])
+
+	idToken, err := s.verifier.Verify(s.context, parts[1])
+
 	if err != nil {
 		fmt.Println(err.Error())
-	}
-	if err != nil {
 		http.Redirect(w, r, s.auth.AuthCodeURL(s.state), http.StatusFound)
 		return
 	}
 
-	fmt.Fprintf(w, s.authHTML)
+	var user User
+
+	if err := idToken.Claims(&user); err != nil {
+		fmt.Println(err.Error())
+		http.Redirect(w, r, s.auth.AuthCodeURL(s.state), http.StatusFound)
+		return
+	}
+
+	indexHTML, err := s.values.ToHTML(user, s.templateHTML)
+
+	fmt.Fprintf(w, indexHTML)
 }
 
 // CallbackHandler if authorized, runs main page
