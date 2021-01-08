@@ -20,6 +20,7 @@ type ServiceIcons struct {
 		Src           string   `yaml:"src"`
 		AllowedGroups []string `yaml:"allowedGroups"`
 		Show          bool
+		ForceShow     bool `yaml:"force"`
 	} `yaml:"icons"`
 }
 
@@ -70,7 +71,7 @@ func (v *Values) ToHTML(user User, templatedHTML string) (string, error) {
 		// if user groups is in IconLinks allowed groups
 		// show flag is True
 		for _, i := range *v.ServiceIcons.IconLinks {
-			i.Show = isIn(user.Groups, i.AllowedGroups)
+			i.Show = i.ForceShow || isIn(user.Groups, i.AllowedGroups)
 		}
 
 		var tpl bytes.Buffer
